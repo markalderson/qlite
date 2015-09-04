@@ -2,7 +2,7 @@ var QLite = {
 	isPromise: function (a_value) {
 		return a_value && a_value.then && typeof a_value.then === 'function';
 	},
-	deferred: function () {
+	defer: function () {
 		function handleCallbackPromise(got_to_resolve, this_promise, callback_promise) {
 			var next = this_promise.next;
 			callback_promise.then(
@@ -21,57 +21,69 @@ var QLite = {
 		return {
 			resolve: function (result) {
 				var promise = this.promise;
-				// Wrap the resolve procedure inside a function...
-				function res() {
-					var next = promise.next;
-					var arg_for_next;
-					try {
-						arg_for_next = promise.success_callback(result);
-						if (next) {
-							if (QLite.isPromise(arg_for_next)) {
-								var got_to_resolve = true;
-								handleCallbackPromise(got_to_resolve, promise, arg_for_next);
-							} else next.resolve(arg_for_next);
-						}
-					} catch (error) {
-						if (next) next.reject(error);
+				var chained_deferreds = promise.chained_deferreds;
+				for (var i = 0; i < chained_deferreds.length; i++) {
+					// Wrap the resolve procedure inside a function...
+					var next = chained_deferreds[i];
+					var callback = promise.success_callbacks[i];
+					if (callback) {
+						function res() {
+							var arg_for_next;
+							try {
+								arg_for_next = callback(result);
+								if (next) {
+									if (QLite.isPromise(arg_for_next)) {
+										var got_to_resolve = true;
+										handleCallbackPromise(got_to_resolve, promise, arg_for_next);
+									} else next.resolve(arg_for_next);
+								}
+							} catch (error) {
+								if (next) next.reject(error);
+							}
+						};
+						// ...and wait until client code terminates
+						setTimeout(res, 0);
 					}
-				};
-				// ...and wait until client code terminates
-				setTimeout(res, 0);
+				}
 			},
 			reject: function (reason) {
 				var promise = this.promise;
-				// Wrap the reject procedure inside a function...
-				function rej() {
-					var next = promise.next;
-					var arg_for_next;
-					try {
-						arg_for_next = promise.error_callback(reason);
-						if (next) {
-							if (QLite.isPromise(arg_for_next)) {
-								var got_to_resolve = false;
-								handleCallbackPromise(got_to_resolve, promise, arg_for_next);
-							} else next.reject(arg_for_next);
-						}
-					} catch (error) {
-						if (next) next.reject(error);
+				var chained_deferreds = promise.chained_deferreds;
+				for (var i = 0; i < chained_deferreds.length; i++) {
+					var next = chained_deferreds[i];
+					var callback = promise.error_callbacks[i];
+					if (callback) {
+						// Wrap the reject procedure inside a function...
+						function rej() {
+							var arg_for_next;
+							try {
+								arg_for_next = callback(reason);
+								if (next) {
+									if (QLite.isPromise(arg_for_next)) {
+										var got_to_resolve = false;
+										handleCallbackPromise(got_to_resolve, promise, arg_for_next);
+									} else next.reject(arg_for_next);
+								}
+							} catch (error) {
+								if (next) next.reject(error);
+							}
+						};
+						// ...and wait until client code terminates
+						setTimeout(rej, 0);
 					}
-				};
-				// ...and wait until client code terminates
-				setTimeout(rej, 0);
+				}
 			},
 			promise: {
-				success_callback: function () {}, // default: do nothing
-				error_callback: function () {}, // default: do nothing
+				success_callbacks: [],
+				error_callbacks: [],
+				chained_deferreds: [],
 				then: function (success_callback, error_callback) {
-					// Override callbacks, if provided
-					if (success_callback) this.success_callback = success_callback;
-					if (error_callback) this.error_callback = error_callback;
+					if (success_callback) this.success_callbacks.push(success_callback);
+					if (error_callback) this.error_callbacks.push(error_callback);
 
-					// Return new chained promise
-					this.next = QLite.deferred();
-					return this.next.promise;
+					var chained_deferred = QLite.defer();
+					this.chained_deferreds.push(chained_deferred);
+					return chained_deferred.promise;
 				}
 			}
 		};
@@ -79,7 +91,7 @@ var QLite = {
 };
 
 function asyncMessage(message, wait) {
-	var deferred = QLite.deferred();
+	var deferred = QLite.defer();
 	setTimeout(function () {
 		deferred.resolve(message);
 	}, wait);
@@ -88,25 +100,38 @@ function asyncMessage(message, wait) {
 
 
 function syncMessage(message) {
-	var deferred = QLite.deferred();
+	var deferred = QLite.defer();
 	deferred.resolve(message);
 	return deferred.promise;
 }
 
 function failingAsyncMessage(message, wait) {
-	var deferred = QLite.deferred();
+	var deferred = QLite.defer();
 	setTimeout(function () {
 		deferred.reject(message);
 	}, wait);
 	return deferred.promise;
 }
 
+/*
 asyncMessage('yo', 1000).then(function () {
 	throw 'nope';
 }).then(function (m) {
 	console.log('ok: ' + m);
 }, function (m) {
 	console.log('error: ' + m);
+});
+*/
+
+var a_promise = asyncMessage('yo', 1000);
+
+a_promise.then(function (m) {
+	console.log('yeay');
+});
+
+
+a_promise.then(function (m) {
+	console.log(m.toUpperCase());
 });
 
 /*
