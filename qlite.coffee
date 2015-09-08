@@ -74,3 +74,4 @@ QLite =
 				finally: (onSettled) ->
 					@then onSettled, onSettled
 					return
+window.QLite = QLite

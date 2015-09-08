@@ -113,4 +113,6 @@
     }
   };
 
+  window.QLite = QLite;
+
 }).call(this);

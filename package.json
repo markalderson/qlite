@@ -1,0 +1,32 @@
+{
+  "name": "qlite",
+  "version": "0.0.0",
+  "description": "A tiny promise library.",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/markalderson/qlite.git"
+  },
+  "keywords": [
+    "promise",
+    "q",
+    "deferred",
+    "then",
+    "javascript",
+    "asynchronous",
+    "callbacks"
+  ],
+  "author": "Marco Liceti",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/markalderson/qlite/issues"
+  },
+  "homepage": "https://github.com/markalderson/qlite#readme",
+  "devDependencies": {
+    "coffee-script": "^1.10.0",
+    "jasmine-core": "^2.3.4",
+    "karma": "^0.13.9",
+    "karma-chrome-launcher": "^0.2.0",
+    "karma-firefox-launcher": "^0.1.6",
+    "karma-jasmine": "^0.3.6"
+  }
+}
