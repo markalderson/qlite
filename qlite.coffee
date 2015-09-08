@@ -1,4 +1,9 @@
 QLite =
+	# Private Implementation
+	private:
+		# Force async behavior
+		delay: (what) -> setTimeout what, 0; return
+	# Public API
 	# Test if value is a promise
 	isPromise: (value) ->
 				# Everything with a then method is
@@ -42,14 +47,16 @@ QLite =
 								else do @settleChained chained, { with_operation: how.with_operation, with_argument: callback_result }
 						catch error
 							do @settleChained chained, { with_operation: 'reject', with_argument: error }
-					return
+						return
 			# Public API
 			# Resolve the associated promise
 			resolve: (value) ->
-				@private.settle { with_operation: 'resolve', with_argument: value }
+				myself = @
+				QLite.private.delay -> myself.private.settle { with_operation: 'resolve', with_argument: value }
 			# Reject the associated promise
 			reject: (reason) ->
-				@private.settle { with_operation: 'reject', with_argument: reason }
+				myself = @
+				QLite.private.delay -> myself.private.settle { with_operation: 'reject', with_argument: reason }
 			# The associated promise
 			promise:
 				# Assign callbacks that will handle fulfillment / rejection
@@ -67,7 +74,3 @@ QLite =
 				finally: (onSettled) ->
 					@then onSettled, onSettled
 					return
-
-deferred = QLite.defer()
-deferred.reject('dammit!')
-deferred.promise.finally (err) -> console.log err; return
