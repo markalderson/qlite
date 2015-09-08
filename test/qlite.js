@@ -85,10 +85,10 @@
       deferred.resolve();
       c = function() {};
       return deferred.promise.then(function() {
-        return expect(c).toHaveBeenCalled();
+        return expect(c).not.toHaveBeenCalled();
       });
     });
-    return it('works also when _reject_ is called before _then_', function() {
+    it('works also when _reject_ is called before _then_', function() {
       var c, deferred;
       deferred = QLite.defer();
       deferred.reject();
@@ -96,6 +96,19 @@
       return deferred.promise.fail(function() {
         return expect(c).toHaveBeenCalled();
       });
+    });
+    return it('offers a _all_ method to combine multiple promises', function() {
+      var c, combined, d1, d2, d3;
+      d1 = QLite.defer();
+      d2 = QLite.defer();
+      d3 = QLite.defer();
+      combined = QLite.all([d1.promise, d2.promise, d2.promise]);
+      c = function() {};
+      combined.then(c);
+      d1.promise.then(function() {
+        return expect(c).not.toHaveBeenCalled();
+      });
+      return d1.resolve();
     });
   });
 

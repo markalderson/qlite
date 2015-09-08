@@ -22,10 +22,10 @@
             };
           },
           settle: function(how) {
-            var c1, c2, callback, callback_result, chained, error, error1, i, len, ref;
+            var c1, c2, callback, callback_result, chained, error, error1, j, len, ref;
             ref = this.chaineds;
-            for (i = 0, len = ref.length; i < len; i++) {
-              chained = ref[i];
+            for (j = 0, len = ref.length; j < len; j++) {
+              chained = ref[j];
               try {
                 switch (how.with_operation) {
                   case 'resolve':
@@ -110,6 +110,46 @@
           }
         }
       };
+    },
+    all: function(promises) {
+      var check, combined, i, implementation, j, len, notifyFulfillment, notifyRejection, promise;
+      combined = QLite.defer();
+      implementation = {
+        values: [],
+        fulfilled: []
+      };
+      check = function() {
+        var fulfilled, j, len, n_fulfilled, ref;
+        n_fulfilled = 0;
+        ref = implementation.fulfilled;
+        for (j = 0, len = ref.length; j < len; j++) {
+          fulfilled = ref[j];
+          if (fulfilled === true) {
+            n_fulfilled++;
+          }
+        }
+        if (n_fulfilled === implementation.fulfilled.length) {
+          return combined.resolve(implementation.values);
+        }
+      };
+      notifyFulfillment = function(i, value) {
+        implementation.fulfilled[i] = true;
+        implementation.values[i] = value;
+        return check();
+      };
+      notifyRejection = function(reason) {
+        return combined.reject(reason);
+      };
+      for (i = j = 0, len = promises.length; j < len; i = ++j) {
+        promise = promises[i];
+        promise.then((function(value) {
+          return notifyFulfillment(i, value);
+        }), notifyRejection);
+      }
+      return combined.promise;
+    },
+    any: function(promises) {
+      return 'TODO';
     }
   };
 

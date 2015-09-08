@@ -38,9 +38,18 @@ describe 'QLite', ->
     deferred = QLite.defer()
     deferred.resolve()
     c = ->
-    deferred.promise.then -> expect(c).toHaveBeenCalled()
+    deferred.promise.then -> expect(c).not.toHaveBeenCalled()
   it 'works also when _reject_ is called before _then_', ->
     deferred = QLite.defer()
     deferred.reject()
     c = ->
     deferred.promise.fail -> expect(c).toHaveBeenCalled()
+  it 'offers a _all_ method to combine multiple promises', ->
+    d1 = QLite.defer()
+    d2 = QLite.defer()
+    d3 = QLite.defer()
+    combined = QLite.all [d1.promise, d2.promise, d2.promise]
+    c = ->
+    combined.then c
+    d1.promise.then -> expect(c).not.toHaveBeenCalled()
+    d1.resolve()

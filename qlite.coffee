@@ -74,4 +74,24 @@ QLite =
         finally: (onSettled) ->
           @then onSettled, onSettled
           return
+  all: (promises) ->
+    combined = QLite.defer()
+    implementation =
+      values: []
+      fulfilled: []
+    check = ->
+      n_fulfilled = 0
+      n_fulfilled++ for fulfilled in implementation.fulfilled when fulfilled is true;
+      if n_fulfilled is implementation.fulfilled.length
+        combined.resolve implementation.values
+    notifyFulfillment = (i, value) ->
+      implementation.fulfilled[i] = true
+      implementation.values[i] = value
+      check()
+    notifyRejection = (reason) -> combined.reject reason
+    for promise, i in promises
+      promise.then ((value) -> notifyFulfillment i, value), notifyRejection
+    combined.promise
+  any: (promises) ->
+    'TODO'
 window.QLite = QLite
