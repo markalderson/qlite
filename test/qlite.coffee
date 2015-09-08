@@ -1,5 +1,5 @@
 describe 'QLite', ->
-	beforeEach ->
+  beforeEach ->
     jasmine.clock().install()
   afterEach ->
     jasmine.clock().uninstall()
