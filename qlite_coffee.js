@@ -3,72 +3,96 @@
   var QLite, deferred;
 
   QLite = {
+    isPromise: function(value) {
+      return ((value != null ? value.then : void 0) != null) && typeof value.then === 'function';
+    },
     defer: function() {
       var deferred;
       return deferred = {
         "private": {
-          resolve_callbacks: [],
-          reject_callbacks: [],
-          chained_deferreds: []
-        },
-        isPromise: function(value) {
-          return ((value != null ? value.then : void 0) != null) && typeof value.then === 'function';
-        },
-        resolve: function(value) {
-          var callback_result, chained_deferred, i, len, ref, resolve_callback, results;
-          ref = this["private"].resolve_callbacks;
-          results = [];
-          for (i = 0, len = ref.length; i < len; i++) {
-            resolve_callback = ref[i];
-            callback_result = resolve_callback(value);
-            if (this.isPromise(callback_result)) {
-              results.push(callback_result.then(function(callback_value) {
-                var chained_deferred, j, len1, ref1, results1;
-                ref1 = this["private"].chained_deferreds;
-                results1 = [];
-                for (j = 0, len1 = ref1.length; j < len1; j++) {
-                  chained_deferred = ref1[j];
-                  results1.push(chained_deferred.resolve(callback_value));
+          chaineds: [],
+          settleChained: function(which, how) {
+            return function() {
+              which.deferred[how.with_operation](how.with_argument);
+            };
+          },
+          settle: function(how) {
+            var c1, c2, callback, callback_result, chained, error, error1, i, len, ref;
+            ref = this.chaineds;
+            for (i = 0, len = ref.length; i < len; i++) {
+              chained = ref[i];
+              try {
+                switch (how.with_operation) {
+                  case 'resolve':
+                    callback = chained.resolve_callback;
+                    break;
+                  case 'reject':
+                    callback = chained.reject_callback;
+                    break;
+                  default:
+                    null;
                 }
-                return results1;
-              }, function(callback_reason) {
-                var chained_deferred, j, len1, ref1, results1;
-                ref1 = this["private"].chained_deferreds;
-                results1 = [];
-                for (j = 0, len1 = ref1.length; j < len1; j++) {
-                  chained_deferred = ref1[j];
-                  results1.push(chained_deferred.reject(callback_reason));
+                if (callback != null) {
+                  callback_result = callback(how.with_argument);
+                  if (QLite.isPromise(callback_result)) {
+                    c1 = this.settleChained(chained, {
+                      with_operation: how.with_operation,
+                      with_argument: callback_result
+                    });
+                    c2 = this.settleChained(chained, {
+                      with_operation: 'reject',
+                      with_argument: callback_result
+                    });
+                    callback_result.then(c1, c2);
+                  } else {
+                    this.settleChained(chained, {
+                      with_operation: how.with_operation,
+                      with_argument: callback_result
+                    })();
+                  }
                 }
-                return results1;
-              }));
-            } else {
-              results.push((function() {
-                var j, len1, ref1, results1;
-                ref1 = this["private"].chained_deferreds;
-                results1 = [];
-                for (j = 0, len1 = ref1.length; j < len1; j++) {
-                  chained_deferred = ref1[j];
-                  results1.push(chained_deferred.resolve(callback_result));
-                }
-                return results1;
-              }).call(this));
+              } catch (error1) {
+                error = error1;
+                this.settleChained(chained, {
+                  with_operation: 'reject',
+                  with_argument: error
+                })();
+              }
             }
           }
-          return results;
         },
-        reject: 'TODO',
+        resolve: function(value) {
+          return this["private"].settle({
+            with_operation: 'resolve',
+            with_argument: value
+          });
+        },
+        reject: function(reason) {
+          return this["private"].settle({
+            with_operation: 'reject',
+            with_argument: reason
+          });
+        },
         promise: {
-          then: function(onFullfilled, onRejected) {
-            var chained_deferred;
-            if (onFullfilled != null) {
-              deferred["private"].resolve_callbacks.push(onFullfilled);
+          then: function(onFulfilled, onRejected) {
+            var chained;
+            chained = {
+              deferred: QLite.defer()
+            };
+            if (onFulfilled != null) {
+              chained.resolve_callback = onFulfilled;
             }
-            if (onRejected != null) {
-              deferred["private"].reject_callbacks.push(onRejected);
-            }
-            chained_deferred = QLite.defer();
-            deferred["private"].chained_deferreds.push(chained_deferred);
-            return chained_deferred;
+            chained.reject_callback = onRejected != null ? onRejected : function(reason) {
+              return reason;
+            };
+            deferred["private"].chaineds.push(chained);
+            return chained.deferred.promise;
+          },
+          fail: function(onRejected) {
+            this.then(null, onRejected);
+          },
+          "finally": function(onSettled) {
+            this.then(onSettled, onSettled);
           }
         }
       };
@@ -77,10 +101,10 @@
 
   deferred = QLite.defer();
 
-  deferred.promise.then((function() {
-    return {};
-  }));
+  deferred.reject('dammit!');
 
-  deferred.resolve(2);
+  deferred.promise["finally"](function(err) {
+    console.log(err);
+  });
 
 }).call(this);

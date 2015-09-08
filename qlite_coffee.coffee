@@ -1,38 +1,73 @@
 QLite =
+	# Test if value is a promise
+	isPromise: (value) ->
+				# Everything with a then method is
+				# considered a promise.
+				value?.then? and typeof value.then is 'function'
+	# Construct a new deferred object (i.e. a promise wrapper)
 	defer: ->
 		deferred =
 			# Private Implementation
 			private:
-				resolve_callbacks: []
-				reject_callbacks: []
-				chained_deferreds: []
+				# Internal State
+				chaineds: []
+				# Helper Methods
+				# Fulfill or reject a chained deferred object
+				# Note: actually, it returns a settler function
+				# which = the chained to settle
+				# how = an object specifying how to settle
+				# how.with_operation = 'resolve' | 'reject'
+				# how.with_argument = resolve value or reject reason
+				settleChained: (which, how) ->
+					->
+						which.deferred[how.with_operation] how.with_argument
+						return
+				# Fulfill or reject this deferred / promise
+				# how = an object specifying how to settle
+				# how.with_operation = 'resolve' | 'reject'
+				# how.with_argument = resolve value or reject reason
+				settle: (how) ->
+					for chained in @chaineds
+						try
+							switch how.with_operation
+								when 'resolve' then callback = chained.resolve_callback
+								when 'reject' then callback = chained.reject_callback
+								else null
+							if callback?
+								callback_result = callback how.with_argument
+								if QLite.isPromise callback_result
+									c1 = @settleChained chained, { with_operation: how.with_operation, with_argument: callback_result }
+									c2 = @settleChained chained, { with_operation: 'reject', with_argument: callback_result }
+									callback_result.then c1, c2
+								else do @settleChained chained, { with_operation: how.with_operation, with_argument: callback_result }
+						catch error
+							do @settleChained chained, { with_operation: 'reject', with_argument: error }
+					return
 			# Public API
-			isPromise: (value) ->
-				# Everything with a then method is
-				# considered a promise.
-				value?.then? and typeof value.then is 'function'
+			# Resolve the associated promise
 			resolve: (value) ->
-				for resolve_callback in @private.resolve_callbacks
-					callback_result = resolve_callback value
-					if @isPromise callback_result
-						callback_result.then((callback_value) -> 
-							for chained_deferred in @private.chained_deferreds
-								chained_deferred.resolve callback_value,
-						(callback_reason) -> 
-							for chained_deferred in @private.chained_deferreds
-								chained_deferred.reject callback_reason
-						)
-					else for chained_deferred in @private.chained_deferreds
-						chained_deferred.resolve callback_result
-			reject: 'TODO'
+				@private.settle { with_operation: 'resolve', with_argument: value }
+			# Reject the associated promise
+			reject: (reason) ->
+				@private.settle { with_operation: 'reject', with_argument: reason }
+			# The associated promise
 			promise:
-				then: (onFullfilled, onRejected) ->
-					deferred.private.resolve_callbacks.push onFullfilled if onFullfilled?
-					deferred.private.reject_callbacks.push onRejected if onRejected?
-					chained_deferred = QLite.defer()
-					deferred.private.chained_deferreds.push chained_deferred
-					chained_deferred
+				# Assign callbacks that will handle fulfillment / rejection
+				then: (onFulfilled, onRejected) ->
+					chained = { deferred: QLite.defer() }
+					chained.resolve_callback = onFulfilled if onFulfilled?
+					chained.reject_callback = if onRejected? then onRejected else (reason) -> reason
+					deferred.private.chaineds.push chained
+					chained.deferred.promise
+				# Only assign rejection callback
+				fail: (onRejected) ->
+					@then null, onRejected
+					return
+				# Assign the same callback both for fulfillment and for rejection
+				finally: (onSettled) ->
+					@then onSettled, onSettled
+					return
 
 deferred = QLite.defer()
-deferred.promise.then (-> {})
-deferred.resolve 2
+deferred.reject('dammit!')
+deferred.promise.finally (err) -> console.log err; return
