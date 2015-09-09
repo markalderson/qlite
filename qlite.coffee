@@ -2,7 +2,7 @@ QLite =
   # Private Implementation
   private:
     # Force async behavior
-    delay: (what) -> setTimeout what, 0; return
+    delay: (what) -> setTimeout what, 0
   # Public API
   # Test if value is a promise
   isPromise: (value) ->
@@ -26,7 +26,6 @@ QLite =
         settleChained: (which, how) ->
           ->
             which.deferred[how.with_operation] how.with_argument
-            return
         # Fulfill or reject this deferred / promise
         # how = an object specifying how to settle
         # how.with_operation = 'resolve' | 'reject'
@@ -47,33 +46,37 @@ QLite =
                 else do @settleChained chained, { with_operation: how.with_operation, with_argument: callback_result }
             catch error
               do @settleChained chained, { with_operation: 'reject', with_argument: error }
-          return
       # Public API
       # Resolve the associated promise
       resolve: (value) ->
-        myself = @
-        QLite.private.delay -> myself.private.settle { with_operation: 'resolve', with_argument: value }
+        if !@promise.settled
+          @promise.settled = true
+          myself = @
+          QLite.private.delay -> myself.private.settle { with_operation: 'resolve', with_argument: value }
       # Reject the associated promise
       reject: (reason) ->
-        myself = @
-        QLite.private.delay -> myself.private.settle { with_operation: 'reject', with_argument: reason }
+        if !@promise.settled
+          @promise.settled = true
+          myself = @
+          QLite.private.delay -> myself.private.settle { with_operation: 'reject', with_argument: reason }
       # The associated promise
       promise:
+        # Private Implementation
+        settled: false
+        # Public API
         # Assign callbacks that will handle fulfillment / rejection
         then: (onFulfilled, onRejected) ->
           chained = { deferred: QLite.defer() }
           chained.resolve_callback = onFulfilled if onFulfilled?
           chained.reject_callback = if onRejected? then onRejected else (reason) -> reason
           deferred.private.chaineds.push chained
-          chained.deferred.promise
+          return chained.deferred.promise
         # Only assign rejection callback
         fail: (onRejected) ->
-          @then null, onRejected
-          return
+          @then undefined, onRejected
         # Assign the same callback both for fulfillment and for rejection
-        finally: (onSettled) ->
+        fin: (onSettled) ->
           @then onSettled, onSettled
-          return
   # Create a promise from an array of promises.
   # Fulfills when all given promises do.
   # Rejects as soon as one of the given promises does.
@@ -90,13 +93,11 @@ QLite =
       implementation.values[i] = value
       if implementation.fulfilled is promises.length
         combined.resolve implementation.values
-      return
-    notifyRejection = (reason) -> combined.reject reason; return
+    notifyRejection = (reason) -> combined.reject reason
     for promise in promises
       do (promise) ->
-        promise.then ((value) -> notifyFulfillment promise, value; return), notifyRejection
-        return
-    combined.promise
+        promise.then ((value) -> notifyFulfillment promise, value), notifyRejection
+    return combined.promise
   # Create a promise from an array of promises.
   # Fulfills as soon as one of the given promises does.
   # Rejects when all the given promises do.
@@ -105,15 +106,13 @@ QLite =
   any: (promises) ->
     combined = QLite.defer()
     rejected = 0
-    notifyFulfillment = (value) -> combined.resolve value; return
+    notifyFulfillment = (value) -> combined.resolve value
     notifyRejection = ->
       rejected++
       if rejected is promises.length
         combined.reject undefined
-      return
     for promise in promises
       do (promise) ->
         promise.then notifyFulfillment, notifyRejection
-        return
-    combined.promise
+    return combined.promise
 window.QLite = QLite

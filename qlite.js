@@ -5,7 +5,7 @@
   QLite = {
     "private": {
       delay: function(what) {
-        setTimeout(what, 0);
+        return setTimeout(what, 0);
       }
     },
     isPromise: function(value) {
@@ -18,12 +18,13 @@
           chaineds: [],
           settleChained: function(which, how) {
             return function() {
-              which.deferred[how.with_operation](how.with_argument);
+              return which.deferred[how.with_operation](how.with_argument);
             };
           },
           settle: function(how) {
-            var c1, c2, callback, callback_result, chained, error, error1, j, len, ref;
+            var c1, c2, callback, callback_result, chained, error, error1, j, len, ref, results;
             ref = this.chaineds;
+            results = [];
             for (j = 0, len = ref.length; j < len; j++) {
               chained = ref[j];
               try {
@@ -48,45 +49,55 @@
                       with_operation: 'reject',
                       with_argument: callback_result
                     });
-                    callback_result.then(c1, c2);
+                    results.push(callback_result.then(c1, c2));
                   } else {
-                    this.settleChained(chained, {
+                    results.push(this.settleChained(chained, {
                       with_operation: how.with_operation,
                       with_argument: callback_result
-                    })();
+                    })());
                   }
+                } else {
+                  results.push(void 0);
                 }
               } catch (error1) {
                 error = error1;
-                this.settleChained(chained, {
+                results.push(this.settleChained(chained, {
                   with_operation: 'reject',
                   with_argument: error
-                })();
+                })());
               }
             }
+            return results;
           }
         },
         resolve: function(value) {
           var myself;
-          myself = this;
-          return QLite["private"].delay(function() {
-            return myself["private"].settle({
-              with_operation: 'resolve',
-              with_argument: value
+          if (!this.promise.settled) {
+            this.promise.settled = true;
+            myself = this;
+            return QLite["private"].delay(function() {
+              return myself["private"].settle({
+                with_operation: 'resolve',
+                with_argument: value
+              });
             });
-          });
+          }
         },
         reject: function(reason) {
           var myself;
-          myself = this;
-          return QLite["private"].delay(function() {
-            return myself["private"].settle({
-              with_operation: 'reject',
-              with_argument: reason
+          if (!this.promise.settled) {
+            this.promise.settled = true;
+            myself = this;
+            return QLite["private"].delay(function() {
+              return myself["private"].settle({
+                with_operation: 'reject',
+                with_argument: reason
+              });
             });
-          });
+          }
         },
         promise: {
+          settled: false,
           then: function(onFulfilled, onRejected) {
             var chained;
             chained = {
@@ -102,10 +113,10 @@
             return chained.deferred.promise;
           },
           fail: function(onRejected) {
-            this.then(null, onRejected);
+            return this.then(void 0, onRejected);
           },
-          "finally": function(onSettled) {
-            this.then(onSettled, onSettled);
+          fin: function(onSettled) {
+            return this.then(onSettled, onSettled);
           }
         }
       };
@@ -123,15 +134,15 @@
         i = promises.indexOf(promise);
         implementation.values[i] = value;
         if (implementation.fulfilled === promises.length) {
-          combined.resolve(implementation.values);
+          return combined.resolve(implementation.values);
         }
       };
       notifyRejection = function(reason) {
-        combined.reject(reason);
+        return combined.reject(reason);
       };
       fn = function(promise) {
-        promise.then((function(value) {
-          notifyFulfillment(promise, value);
+        return promise.then((function(value) {
+          return notifyFulfillment(promise, value);
         }), notifyRejection);
       };
       for (j = 0, len = promises.length; j < len; j++) {
@@ -145,16 +156,16 @@
       combined = QLite.defer();
       rejected = 0;
       notifyFulfillment = function(value) {
-        combined.resolve(value);
+        return combined.resolve(value);
       };
       notifyRejection = function() {
         rejected++;
         if (rejected === promises.length) {
-          combined.reject(void 0);
+          return combined.reject(void 0);
         }
       };
       fn = function(promise) {
-        promise.then(notifyFulfillment, notifyRejection);
+        return promise.then(notifyFulfillment, notifyRejection);
       };
       for (j = 0, len = promises.length; j < len; j++) {
         promise = promises[j];

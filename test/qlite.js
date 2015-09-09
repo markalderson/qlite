@@ -26,10 +26,43 @@
         return deferred.reject('I am rejecting you!');
       }), 1000);
       c = jasmine.createSpy('c');
+      deferred.promise.then(null, c);
+      expect(c).not.toHaveBeenCalled();
+      jasmine.clock().tick(1001);
+      return expect(c).toHaveBeenCalledWith('I am rejecting you!');
+    });
+    it('creates deferred objects with a _fail(x)_ method as a shorthand for _then(null, x)_', function() {
+      var c, deferred;
+      deferred = QLite.defer();
+      setTimeout((function() {
+        return deferred.reject('I am rejecting you!');
+      }), 1000);
+      c = jasmine.createSpy('c');
       deferred.promise.fail(c);
       expect(c).not.toHaveBeenCalled();
       jasmine.clock().tick(1001);
       return expect(c).toHaveBeenCalledWith('I am rejecting you!');
+    });
+    it('creates deferred objects with a _fin(x)_ method as a shorthand for _then(x, x)_', function() {
+      var c1, c2, deferred;
+      deferred = QLite.defer();
+      setTimeout((function() {
+        return deferred.resolve('I am resolving!');
+      }), 1000);
+      c1 = jasmine.createSpy('c1');
+      deferred.promise.fin(c1);
+      expect(c1).not.toHaveBeenCalled();
+      jasmine.clock().tick(1001);
+      expect(c1).toHaveBeenCalledWith('I am resolving!');
+      deferred = QLite.defer();
+      setTimeout((function() {
+        return deferred.reject('I am rejecting!');
+      }), 1000);
+      c2 = jasmine.createSpy('c2');
+      deferred.promise.fin(c2);
+      expect(c2).not.toHaveBeenCalled();
+      jasmine.clock().tick(1001);
+      return expect(c2).toHaveBeenCalledWith('I am rejecting!');
     });
     it('creates promises that are chainable', function() {
       var c, deferred, increment;
@@ -85,6 +118,30 @@
       deferred.promise.then(c);
       jasmine.clock().tick(1);
       return expect(c).toHaveBeenCalledWith('Yo!');
+    });
+    it('creates promises that once settled can\'t be fulfilled / rejected again', function() {
+      var c1, c2, deferred;
+      deferred = QLite.defer();
+      c1 = jasmine.createSpy('c1');
+      deferred.promise.then(c1);
+      deferred.resolve('I am resolving!');
+      deferred.resolve('I am resolving again!');
+      deferred.reject('I am rejecting!');
+      expect(c1).not.toHaveBeenCalled();
+      jasmine.clock().tick(1);
+      expect(c1).toHaveBeenCalledWith('I am resolving!');
+      expect(c1).not.toHaveBeenCalledWith('I am resolving again!');
+      expect(c1).not.toHaveBeenCalledWith('I am rejecting!');
+      deferred = QLite.defer();
+      c2 = jasmine.createSpy('c2');
+      deferred.promise.fail(c2);
+      deferred.reject('I am rejecting!');
+      deferred.resolve('I am resolving!');
+      deferred.reject('I am rejecting again!');
+      jasmine.clock().tick(1);
+      expect(c2).toHaveBeenCalledWith('I am rejecting!');
+      expect(c2).not.toHaveBeenCalledWith('I am resolving!');
+      return expect(c2).not.toHaveBeenCalledWith('I am rejecting again!');
     });
     it('offers a _all_ method that creates a promise fulfilling when all passed promises do', function() {
       var c, combined, d1, d2, d3, i, ref;
