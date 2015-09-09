@@ -47,7 +47,7 @@ QLite =
                 else do @settleChained chained, { with_operation: how.with_operation, with_argument: callback_result }
             catch error
               do @settleChained chained, { with_operation: 'reject', with_argument: error }
-            return
+          return
       # Public API
       # Resolve the associated promise
       resolve: (value) ->
@@ -74,24 +74,60 @@ QLite =
         finally: (onSettled) ->
           @then onSettled, onSettled
           return
+  # Create a promise from an array of promises.
+  # Fulfills when all given promises do.
+  # Rejects as soon as one of the given promises does.
+  # Fulfill value is an array containing the fulfill values of the given promises.
+  # Reject reason is the same of the first rejecting promise.
   all: (promises) ->
     combined = QLite.defer()
     implementation =
+      promises: promises
       values: []
       fulfilled: []
     check = ->
       n_fulfilled = 0
-      n_fulfilled++ for fulfilled in implementation.fulfilled when fulfilled is true;
-      if n_fulfilled is implementation.fulfilled.length
+      n_fulfilled++ for fulfilled in implementation.fulfilled when fulfilled is true
+      if n_fulfilled is implementation.promises.length
         combined.resolve implementation.values
-    notifyFulfillment = (i, value) ->
+      return
+    notifyFulfillment = (promise, value) ->
+      i = implementation.promises.indexOf promise
       implementation.fulfilled[i] = true
       implementation.values[i] = value
       check()
-    notifyRejection = (reason) -> combined.reject reason
-    for promise, i in promises
-      promise.then ((value) -> notifyFulfillment i, value), notifyRejection
+      return
+    notifyRejection = (reason) -> combined.reject reason; return
+    for promise in promises
+      do (promise) ->
+        promise.then ((value) -> notifyFulfillment promise, value; return), notifyRejection
+        return
     combined.promise
+  # Create a promise from an array of promises.
+  # Fulfills as soon as one of the given promises does.
+  # Rejects when all the given promises do.
+  # Fulfill value is the same of the first fulfilling promise.
+  # Rejection value is undefined.
   any: (promises) ->
-    'TODO'
+    combined = QLite.defer()
+    implementation =
+      promises: promises
+      rejected: []
+    check = ->
+      n_rejected = 0
+      n_rejected++ for rejected in implementation.rejected when rejected is true
+      if n_rejected is implementation.promises.length
+        combined.reject undefined
+      return
+    notifyFulfillment = (value) -> combined.resolve value; return
+    notifyRejection = (promise) ->
+      i = implementation.promises.indexOf promise
+      implementation.rejected[i] = true
+      check()
+      return
+    for promise in promises
+      do (promise) ->
+        promise.then notifyFulfillment, (-> notifyRejection promise; return)
+        return
+    combined.promise
 window.QLite = QLite
