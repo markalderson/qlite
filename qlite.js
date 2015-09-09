@@ -111,33 +111,20 @@
       };
     },
     all: function(promises) {
-      var check, combined, fn, implementation, j, len, notifyFulfillment, notifyRejection, promise;
+      var combined, fn, implementation, j, len, notifyFulfillment, notifyRejection, promise;
       combined = QLite.defer();
       implementation = {
-        promises: promises,
         values: [],
-        fulfilled: []
-      };
-      check = function() {
-        var fulfilled, j, len, n_fulfilled, ref;
-        n_fulfilled = 0;
-        ref = implementation.fulfilled;
-        for (j = 0, len = ref.length; j < len; j++) {
-          fulfilled = ref[j];
-          if (fulfilled === true) {
-            n_fulfilled++;
-          }
-        }
-        if (n_fulfilled === implementation.promises.length) {
-          combined.resolve(implementation.values);
-        }
+        fulfilled: 0
       };
       notifyFulfillment = function(promise, value) {
         var i;
-        i = implementation.promises.indexOf(promise);
-        implementation.fulfilled[i] = true;
+        implementation.fulfilled++;
+        i = promises.indexOf(promise);
         implementation.values[i] = value;
-        check();
+        if (implementation.fulfilled === promises.length) {
+          combined.resolve(implementation.values);
+        }
       };
       notifyRejection = function(reason) {
         combined.reject(reason);
@@ -154,39 +141,20 @@
       return combined.promise;
     },
     any: function(promises) {
-      var check, combined, fn, implementation, j, len, notifyFulfillment, notifyRejection, promise;
+      var combined, fn, j, len, notifyFulfillment, notifyRejection, promise, rejected;
       combined = QLite.defer();
-      implementation = {
-        promises: promises,
-        rejected: []
-      };
-      check = function() {
-        var j, len, n_rejected, ref, rejected;
-        n_rejected = 0;
-        ref = implementation.rejected;
-        for (j = 0, len = ref.length; j < len; j++) {
-          rejected = ref[j];
-          if (rejected === true) {
-            n_rejected++;
-          }
-        }
-        if (n_rejected === implementation.promises.length) {
-          combined.reject(void 0);
-        }
-      };
+      rejected = 0;
       notifyFulfillment = function(value) {
         combined.resolve(value);
       };
-      notifyRejection = function(promise) {
-        var i;
-        i = implementation.promises.indexOf(promise);
-        implementation.rejected[i] = true;
-        check();
+      notifyRejection = function() {
+        rejected++;
+        if (rejected === promises.length) {
+          combined.reject(void 0);
+        }
       };
       fn = function(promise) {
-        promise.then(notifyFulfillment, (function() {
-          notifyRejection(promise);
-        }));
+        promise.then(notifyFulfillment, notifyRejection);
       };
       for (j = 0, len = promises.length; j < len; j++) {
         promise = promises[j];

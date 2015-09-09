@@ -82,20 +82,14 @@ QLite =
   all: (promises) ->
     combined = QLite.defer()
     implementation =
-      promises: promises
       values: []
-      fulfilled: []
-    check = ->
-      n_fulfilled = 0
-      n_fulfilled++ for fulfilled in implementation.fulfilled when fulfilled is true
-      if n_fulfilled is implementation.promises.length
-        combined.resolve implementation.values
-      return
+      fulfilled: 0
     notifyFulfillment = (promise, value) ->
-      i = implementation.promises.indexOf promise
-      implementation.fulfilled[i] = true
+      implementation.fulfilled++
+      i = promises.indexOf promise
       implementation.values[i] = value
-      check()
+      if implementation.fulfilled is promises.length
+        combined.resolve implementation.values
       return
     notifyRejection = (reason) -> combined.reject reason; return
     for promise in promises
@@ -110,24 +104,16 @@ QLite =
   # Rejection value is undefined.
   any: (promises) ->
     combined = QLite.defer()
-    implementation =
-      promises: promises
-      rejected: []
-    check = ->
-      n_rejected = 0
-      n_rejected++ for rejected in implementation.rejected when rejected is true
-      if n_rejected is implementation.promises.length
-        combined.reject undefined
-      return
+    rejected = 0
     notifyFulfillment = (value) -> combined.resolve value; return
-    notifyRejection = (promise) ->
-      i = implementation.promises.indexOf promise
-      implementation.rejected[i] = true
-      check()
+    notifyRejection = ->
+      rejected++
+      if rejected is promises.length
+        combined.reject undefined
       return
     for promise in promises
       do (promise) ->
-        promise.then notifyFulfillment, (-> notifyRejection promise; return)
+        promise.then notifyFulfillment, notifyRejection
         return
     combined.promise
 window.QLite = QLite
