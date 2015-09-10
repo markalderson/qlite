@@ -1,11 +1,5 @@
-<<<<<<< HEAD
 # QLite
 
-<<<<<<< HEAD
-A tiny promise library.
-
-**Note:** Still under development.
-=======
 ![](https://raw.githubusercontent.com/marcoliceti/qlite/develop/assets/logo-128.png)
 
 QLite is a **tiny** (less than 3KB) JavaScript [Promise](https://promisesaplus.com/) library.
@@ -90,8 +84,3 @@ Use QLite when:
 * you're strongly interested in understanding the implementation of 3rd party software you include in your projects
 
 Otherwise, just use the regular Q implementation. It has more features and is well tested.
->>>>>>> release-1.0.0
-=======
-# qlite
-A tiny JavaScript Promise library.
->>>>>>> 7fb3b724fc37f82f65fa0c9e4a2140da10587f3c
