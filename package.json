@@ -1,7 +1,7 @@
 {
   "name": "qlite",
-  "version": "0.0.0",
-  "description": "A tiny promise library.",
+  "version": "1.0.0",
+  "description": "A tiny JavaScript Promise library.",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/marcoliceti/qlite.git"
