@@ -8,9 +8,18 @@ Elegantly written in about 100 lines of [CoffeScript](http://coffeescript.org/),
 
 Table of Contents:
 
+* [Download](#download)
 * [But... what are JavaScript Promises?](#but-what-are-javascript-promises)
 * [How does QLite compare with other Promise libraries?](#how-does-qlite-compare-with-other-promise-libraries)
 * [Why should I use QLite?](#why-should-i-use-qlite)
+
+## Download
+
+Of course you can download or clone this repository, but it's better if you use a package manager. QLite is available as an [npm](https://www.npmjs.com/) package:
+
+``` bash
+npm install qlite
+```
 
 ## But... what are JavaScript Promises?
 
@@ -35,8 +44,7 @@ myAsyncTask(input, function(error, output) {
 to this:
 
 ``` javascript
-var output_promise = myAsyncTask(input);
-output_promise.then(doSomethingWith, recoverFrom);
+myAsyncTask(input).then(doSomethingWith, recoverFrom);
 ```
 
 While at first it may not seem a big step forward, the new approach will surely prove useful when asynchronous APIs mix with complex execution flows. _Abstractions like promises allow you to breathe :)_
