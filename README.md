@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # QLite
 
 <<<<<<< HEAD
@@ -90,3 +91,7 @@ Use QLite when:
 
 Otherwise, just use the regular Q implementation. It has more features and is well tested.
 >>>>>>> release-1.0.0
+=======
+# qlite
+A tiny JavaScript Promise library.
+>>>>>>> 7fb3b724fc37f82f65fa0c9e4a2140da10587f3c
