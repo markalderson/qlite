@@ -1,6 +1,6 @@
 # QLite
 
-QLite is a **tiny** JavaScript [Promise](https://promisesaplus.com/) library.
+QLite is a **tiny** (less than 3KB) JavaScript [Promise](https://promisesaplus.com/) library.
 
 Elegantly written in about 100 lines of [CoffeScript](http://coffeescript.org/), QLite is inspired by the [Q Promise library](https://github.com/kriskowal/q), that is also a reference for the promises used in the [Google's AngularJS Framework](https://angularjs.org/).
 
@@ -77,7 +77,7 @@ QLite implementation is _similar_ to Q. More precisely, QLite tests are run also
 
 Use QLite when:
 
-* you want an extremely compact implementation
+* you want an extremely compact implementation (less than 3KB)
 * you're strongly interested in understanding the implementation of 3rd party software you include in your projects
 
 Otherwise, just use the regular Q implementation. It has more features and is well tested.
