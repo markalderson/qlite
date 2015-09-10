@@ -4,6 +4,12 @@ QLite is a **tiny** JavaScript [Promise](https://promisesaplus.com/) library.
 
 Elegantly written in about 100 lines of [CoffeScript](http://coffeescript.org/), QLite is inspired by the [Q Promise library](https://github.com/kriskowal/q), that is also a reference for the promises used in the [Google's AngularJS Framework](https://angularjs.org/).
 
+Summary:
+
+* [But... what are JavaScript Promises?](#but-what-are-javascript-promises)
+* [How does QLite compare with other Promise libraries?](#how-does-qlite-compare-with-other-promise-libraries)
+* [Why should I use QLite?](#why-should-i-use-qlite)
+
 ## But... what are JavaScript Promises?
 
 Put simply, a promise is a JavaScript object:
