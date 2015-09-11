@@ -6,14 +6,14 @@ QLite is a **tiny** (less than 3KB) JavaScript [Promise](https://promisesaplus.c
 
 Elegantly written in about 100 lines of [CoffeScript](http://coffeescript.org/), QLite is inspired by the [Q Promise library](https://github.com/kriskowal/q), that is also a reference for the promises used in the [Google's AngularJS Framework](https://angularjs.org/).
 
-Table of Contents:
+## Table of Contents:
 
 * [Download](#download)
 * [But... what are JavaScript Promises?](#but-what-are-javascript-promises)
 * [How does QLite compare with other Promise libraries?](#how-does-qlite-compare-with-other-promise-libraries)
 * [Why should I use QLite?](#why-should-i-use-qlite)
 
-## Download
+### Download
 
 Of course you can download or clone this repository, but it's better if you use a package manager. QLite is available as an [npm](https://www.npmjs.com/) package:
 
@@ -21,7 +21,27 @@ Of course you can download or clone this repository, but it's better if you use 
 npm install qlite
 ```
 
-## But... what are JavaScript Promises?
+If you use [RequireJS](http://requirejs.org/), you can load QLite as an [AMD module](https://github.com/amdjs/amdjs-api/wiki/AMD), e.g.:
+
+`index.html`
+``` html
+<script data-main="main.js" src="require.js"></script>
+```
+
+`main.js`
+``` javascript
+requirejs(['qlite'], function (QLite) {
+	// Enjoy QLite :D
+});
+```
+
+[Node.js](https://nodejs.org) users can require QLite this way:
+
+``` javascript
+var QLite = require('./qlite.js')();
+```
+
+### But... what are JavaScript Promises?
 
 Put simply, a promise is a JavaScript object:
 
@@ -57,7 +77,7 @@ If you want to learn more, these are some good resources:
 
 **Note:** That's advanced and / or very detailed material. It may be confusing or overwhelm you. My suggestion is to start understanding by _coding_ instead of _reading_. Questions will then arise naturally. Remember: promises are simpler than they appear.
 
-## How does QLite compare with other Promise libraries?
+### How does QLite compare with other Promise libraries?
 
 QLite offers a reasonable subset of the [Q API](https://github.com/kriskowal/q/wiki/API-Reference). Namely, you got these core features:
 
@@ -84,7 +104,7 @@ QLite implementation is _similar_ to Q. More precisely, QLite tests are run also
 * `QLite.isPromise` considers a promise every object with a `then` method
 * `QLite.any` rejects with `undefined` as reason
 
-## Why should I use QLite?
+### Why should I use QLite?
 
 Use QLite when:
 

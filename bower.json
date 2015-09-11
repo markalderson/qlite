@@ -1,0 +1,41 @@
+{
+  "name": "qlite",
+  "main": "qlite.js",
+  "version": "1.0.0",
+  "homepage": "https://github.com/marcoliceti/qlite",
+  "authors": [
+    "Marco Liceti <marco.liceti@gmail.com>"
+  ],
+  "description": "A tiny JavaScript Promise library.",
+  "moduleType": [
+    "amd",
+    "globals",
+    "node"
+  ],
+  "keywords": [
+    "promise",
+    "q",
+    "javascript",
+    "library",
+    "deferred",
+    "defer",
+    "then",
+    "resolve",
+    "asynchronous",
+    "async",
+    "callback"
+  ],
+  "license": "MIT",
+  "ignore": [
+    "node_modules",
+    "bower_components",
+    "assets",
+    "test",
+    "Gruntfile.js",
+    "karma-conf.js",
+    "package.json",
+    ".gitignore",
+    ".git",
+    ".npmignore"
+  ]
+}
