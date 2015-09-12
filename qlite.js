@@ -33,9 +33,6 @@
                     break;
                   case 'reject':
                     callback = chained.reject_callback;
-                    break;
-                  default:
-                    null;
                 }
                 if (callback != null) {
                   callback_result = callback(how.with_argument);
@@ -174,6 +171,19 @@
     }
   };
 
-  window.QLite = QLite;
+  switch (false) {
+    case (typeof module !== "undefined" && module !== null ? module.exports : void 0) == null:
+      module.exports = function() {
+        return QLite;
+      };
+      break;
+    case typeof define === "undefined" || define === null:
+      define(function() {
+        return QLite;
+      });
+      break;
+    case typeof window === "undefined" || window === null:
+      window.QLite = QLite;
+  }
 
 }).call(this);

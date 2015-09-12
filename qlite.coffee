@@ -36,7 +36,6 @@ QLite =
               switch how.with_operation
                 when 'resolve' then callback = chained.resolve_callback
                 when 'reject' then callback = chained.reject_callback
-                else null
               if callback?
                 callback_result = callback how.with_argument
                 if QLite.isPromise callback_result
@@ -115,4 +114,7 @@ QLite =
       do (promise) ->
         promise.then notifyFulfillment, notifyRejection
     return combined.promise
-window.QLite = QLite
+switch
+  when module?.exports? then module.exports = -> QLite
+  when define? then define -> QLite
+  when window? then window.QLite = QLite
