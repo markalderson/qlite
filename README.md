@@ -40,7 +40,7 @@ requirejs(['qlite'], function (QLite) {
 [Node.js](https://nodejs.org) users can require QLite this way:
 
 ``` javascript
-var QLite = require('./qlite.js')();
+var QLite = require('qlite')();
 ```
 
 ### But... what are JavaScript Promises?
