@@ -21,6 +21,12 @@ Of course you can download or clone this repository, but it's better if you use 
 npm install qlite
 ```
 
+Alternatively, if you use [Bower](http://bower.io/):
+
+``` bash
+bower install qlite
+```
+
 If you use [RequireJS](http://requirejs.org/), you can load QLite as an [AMD module](https://github.com/amdjs/amdjs-api/wiki/AMD), e.g.:
 
 `index.html`
