@@ -2,6 +2,7 @@
   "name": "qlite",
   "version": "1.0.0",
   "description": "A tiny JavaScript Promise library.",
+  "main": "qlite.js",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/marcoliceti/qlite.git"
