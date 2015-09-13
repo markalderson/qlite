@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="icon" href="assets/logo-32.png">
+    <title>QLite</title>
+    <link href="https://fonts.googleapis.com/css?family=Open+Sans+Condensed:300" rel='stylesheet'>
+    <link href="node_modules/bootstrap/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="node_modules/prismjs/themes/prism.css" rel="stylesheet">
+    <link href="style.css" rel="stylesheet">
+  </head>
+  <body>
+  	<header>
+  		<div class="container">
+  			<div class="row">
+  				<div class="col-md-12">
+    				<h1><img src="assets/logo-32.png"> QLite</h1>
+    			</div>
+    		</div>
+    	</div>
+    </header>
+    <section>
+    	<div class="container">
+  			<div class="row">
+  				<div class="col-md-6">
+  					<h2>Promises</h2>
+    				<p>QLite is a tiny JavaScript <a href="https://promisesaplus.com/">Promise</a> library. Promises allow you to deal with asynchronous APIs in a mantainable way.</p>
+    				<a class="btn btn-success" href="https://github.com/marcoliceti/qlite#download"><span class="glyphicon glyphicon-download-alt"></span> Download</a>
+    				<a class="btn btn-default" href="https://github.com/marcoliceti/qlite"><span class="glyphicon glyphicon-eye-open"></span> View on GitHub</a>
+    			</div>
+    			<div class="col-md-6">
+    				<h2>Example</h2>
+    				<pre class="responsive"><code class="language-javascript">
+asyncTask1(asyncTask1_input).
+then(function (asyncTask1_output) {
+	return asyncTask2(asyncTask1_output);
+}).
+then(function (asyncTask2_output) {
+	// Do something with asyncTask2_output
+}).
+fail(function (reason) {
+	// Single failure handler for any of the previous tasks
+});</code></pre>
+    			</div>
+    		</div>
+    	</div>
+    </section>
+    <script src="node_modules/prismjs/prism.js"></script>
+  </body>
+</html>

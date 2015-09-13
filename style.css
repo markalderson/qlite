@@ -1,0 +1,30 @@
+body {
+	font-family: 'Open Sans Condensed', sans-serif;
+	background: rgb(224, 224, 224);
+	color: rgb(32, 32, 32);
+}
+
+header {
+	color: rgb(224, 224, 224);
+	background: rgb(32, 32, 32);
+}
+
+section {
+	margin-top: 20px;
+}
+
+p {
+	font-size: 18px;
+}
+
+@keyframes pulse {
+    0% { opacity: 0; }
+    50% { opacity: 1; }
+    100% { opacity: 0; }
+}
+
+header img {
+	animation-name: pulse;
+    animation-duration: 2s;
+    animation-iteration-count: infinite;
+}

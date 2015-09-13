@@ -1,1 +1,4 @@
 node_modules/
+!node_modules/bootstrap/dist/css/bootstrap.min.css
+!node_modules/prismjs/themes/prism.css
+!node_modules/prismjs/prism.js
