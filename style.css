@@ -17,6 +17,10 @@ p {
 	font-size: 18px;
 }
 
+pre.responsive {
+	word-wrap: normal;
+}
+
 @keyframes pulse {
     0% { opacity: 0; }
     50% { opacity: 1; }
