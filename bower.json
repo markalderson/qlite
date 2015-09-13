@@ -1,8 +1,7 @@
 {
   "name": "qlite",
   "main": "qlite.js",
-  "version": "1.0.0",
-  "homepage": "https://github.com/marcoliceti/qlite",
+  "homepage": "http://marcoliceti.github.io/qlite/",
   "authors": [
     "Marco Liceti <marco.liceti@gmail.com>"
   ],
