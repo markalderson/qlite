@@ -78,6 +78,24 @@
       jasmine.clock().tick(1001);
       return expect(c).toHaveBeenCalledWith(3);
     });
+    it('deals properly with callbakcks that return promises', function() {
+      var incrementAsync, incrementSync, s;
+      s = jasmine.createSpy('s');
+      incrementAsync = function(x) {
+        var d;
+        d = QLite.defer();
+        setTimeout((function() {
+          return d.resolve(x + 1);
+        }), 1000);
+        return d.promise;
+      };
+      incrementSync = function(x) {
+        return x;
+      };
+      incrementAsync(1).then(incrementAsync).then(incrementAsync).then(s);
+      jasmine.clock().tick(3001);
+      return expect(s).toHaveBeenCalledWith(4);
+    });
     it('creates promises that support multiple calls to _then_ method', function() {
       var c1, c2, deferred;
       deferred = QLite.defer();

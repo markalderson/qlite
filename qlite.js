@@ -16,52 +16,56 @@
         "private": {
           chaineds: [],
           settleChained: function(which, how) {
-            return function() {
-              return which.deferred[how.with_operation](how.with_argument);
-            };
+            return which.deferred[how.with_operation](how.with_argument);
           },
           settle: function(how) {
-            var c1, c2, callback, callback_result, chained, error, j, len, ref, results;
+            var chained, j, len, myself, ref, results;
+            myself = this;
             ref = this.chaineds;
             results = [];
             for (j = 0, len = ref.length; j < len; j++) {
               chained = ref[j];
-              try {
-                switch (how.with_operation) {
-                  case 'resolve':
-                    callback = chained.resolve_callback;
-                    break;
-                  case 'reject':
-                    callback = chained.reject_callback;
-                }
-                if (callback != null) {
-                  callback_result = callback(how.with_argument);
-                  if (QLite.isPromise(callback_result)) {
-                    c1 = this.settleChained(chained, {
-                      with_operation: how.with_operation,
-                      with_argument: callback_result
-                    });
-                    c2 = this.settleChained(chained, {
-                      with_operation: 'reject',
-                      with_argument: callback_result
-                    });
-                    results.push(callback_result.then(c1, c2));
-                  } else {
-                    results.push(this.settleChained(chained, {
-                      with_operation: how.with_operation,
-                      with_argument: callback_result
-                    })());
+              results.push((function(chained) {
+                var c1, c2, callback, callback_result, error;
+                try {
+                  switch (how.with_operation) {
+                    case 'resolve':
+                      callback = chained.resolve_callback;
+                      break;
+                    case 'reject':
+                      callback = chained.reject_callback;
                   }
-                } else {
-                  results.push(void 0);
+                  if (callback != null) {
+                    callback_result = callback(how.with_argument);
+                    if (QLite.isPromise(callback_result)) {
+                      c1 = function(x) {
+                        return myself.settleChained(chained, {
+                          with_operation: how.with_operation,
+                          with_argument: x
+                        });
+                      };
+                      c2 = function(x) {
+                        return myself.settleChained(chained, {
+                          with_operation: 'reject',
+                          with_argument: x
+                        });
+                      };
+                      return callback_result.then(c1, c2);
+                    } else {
+                      return myself.settleChained(chained, {
+                        with_operation: how.with_operation,
+                        with_argument: callback_result
+                      });
+                    }
+                  }
+                } catch (_error) {
+                  error = _error;
+                  return myself.settleChained(chained, {
+                    with_operation: 'reject',
+                    with_argument: error
+                  });
                 }
-              } catch (_error) {
-                error = _error;
-                results.push(this.settleChained(chained, {
-                  with_operation: 'reject',
-                  with_argument: error
-                })());
-              }
+              })(chained));
             }
             return results;
           }

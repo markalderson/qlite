@@ -53,6 +53,16 @@ describe 'QLite', ->
     expect(c).not.toHaveBeenCalled()
     jasmine.clock().tick 1001
     expect(c).toHaveBeenCalledWith 3
+  it 'deals properly with callbakcks that return promises', ->
+    s = jasmine.createSpy 's'
+    incrementAsync = (x) ->
+      d = QLite.defer()
+      setTimeout (-> d.resolve x + 1), 1000
+      return d.promise
+    incrementSync = (x) -> x
+    incrementAsync(1).then(incrementAsync).then(incrementAsync).then s
+    jasmine.clock().tick 3001
+    expect(s).toHaveBeenCalledWith 4
   it 'creates promises that support multiple calls to _then_ method', ->
     deferred = QLite.defer()
     setTimeout (-> deferred.resolve()), 1000
