@@ -24,27 +24,28 @@ QLite =
         # how.with_operation = 'resolve' | 'reject'
         # how.with_argument = resolve value or reject reason
         settleChained: (which, how) ->
-          ->
-            which.deferred[how.with_operation] how.with_argument
+          which.deferred[how.with_operation] how.with_argument
         # Fulfill or reject this deferred / promise
         # how = an object specifying how to settle
         # how.with_operation = 'resolve' | 'reject'
         # how.with_argument = resolve value or reject reason
         settle: (how) ->
+          myself = @
           for chained in @chaineds
-            try
-              switch how.with_operation
-                when 'resolve' then callback = chained.resolve_callback
-                when 'reject' then callback = chained.reject_callback
-              if callback?
-                callback_result = callback how.with_argument
-                if QLite.isPromise callback_result
-                  c1 = @settleChained chained, { with_operation: how.with_operation, with_argument: callback_result }
-                  c2 = @settleChained chained, { with_operation: 'reject', with_argument: callback_result }
-                  callback_result.then c1, c2
-                else do @settleChained chained, { with_operation: how.with_operation, with_argument: callback_result }
-            catch error
-              do @settleChained chained, { with_operation: 'reject', with_argument: error }
+            do (chained) ->
+              try
+                switch how.with_operation
+                  when 'resolve' then callback = chained.resolve_callback
+                  when 'reject' then callback = chained.reject_callback
+                if callback?
+                  callback_result = callback how.with_argument
+                  if QLite.isPromise callback_result
+                    c1 = (x) -> myself.settleChained chained, { with_operation: how.with_operation, with_argument: x }
+                    c2 = (x) -> myself.settleChained chained, { with_operation: 'reject', with_argument: x }
+                    callback_result.then c1, c2
+                  else myself.settleChained chained, { with_operation: how.with_operation, with_argument: callback_result }
+              catch error
+                myself.settleChained chained, { with_operation: 'reject', with_argument: error }
       # Public API
       # Resolve the associated promise
       resolve: (value) ->
